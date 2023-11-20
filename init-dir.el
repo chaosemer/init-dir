@@ -1,11 +1,12 @@
-;;; init-dir.el ---  Init directory instead of just a single file. -*- lexical-binding: t; -*-
+;;; init-dir.el ---  Init directory instead of just a single file -*- lexical-binding: t; -*-
 
 ;; Copyright 2005-2023 Jared Finder
-;; Author:   Jared Finder <jared@finder.org>
-;; Created:  Feb 22, 2005
-;; Version:  0.1-beta
-;; Keywords: extensions, internal
-;; URL:      http://github.com/chaosemer/init-dir
+;; Author:              Jared Finder <jared@finder.org>
+;; Created:             Feb 22, 2005
+;; Version:             0.1-beta
+;; Keywords:            extensions, internal
+;; URL:                 http://github.com/chaosemer/init-dir
+;; Package-Requires:    ((emacs "27.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -56,12 +57,12 @@
 ;; (after loading init in case the user wants to disable this
 ;; feature).
 ;;
-;; Add integration tests with all supported versions of Emacs.
+;; Add unit tests.
 
 ;;; Code:
 
 (defun init-dir--file-init-loadable-p (file)
-  "Tests if FILE should be loaded at Emacs initialization."
+  "Test if FILE should be loaded at Emacs initialization."
   (and (file-regular-p file)
        (member (file-name-extension file t) load-suffixes)))
 
@@ -81,7 +82,7 @@ MATCH, NOSORT have the same meaning as in `directory-files'."
   "Controls if a file gets a warning if it takes too long to load.
 
 Best practice is to increment this using `cl-incf' next to known
-slow operations.  This can also be set to `nil' to completely
+slow operations.  This can also be set to nil to completely
 disable the long load warning.
 
 Also see `init-dir-load'.")
@@ -91,16 +92,15 @@ Also see `init-dir-load'.")
 (defun init-dir-load (&optional dir)
   "Load files from DIR for initialization.
 
-If unset, DIR defaults to \"init\" in `user-emacs-directory',
-either ~/.config/emacs/init/ or ~/.emacs.d/init/.  See info node
-`Find Init'.
+If unset, DIR defaults to \"init\" in `user-emacs-directory'.
+See info node `Find Init'.
 
 The common use here is to have your init file be very short and
 keep all configuration in a separate directory.  To use this
 behavior, move your configuration to files inside one of these
 directories and put just this single line in your init file:
 
-(init-dir-load)
+\(init-dir-load)
 
 Files will be loaded (via `load') in alphabetical order.  This is
 intended to be used in your init file to load configuration that
