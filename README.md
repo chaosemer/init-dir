@@ -27,7 +27,7 @@ distinguishes init-dir from these other packages?
 * Avoid duplicating built-in Emacs functionality. For example in all
   elisp code you can use the form `(when (eq system-type 'windows-nt)
   ...)` to run code only on Windows so init-dir doesn't have any
-  special "only runs on Windows" functionality..
+  special "only runs on Windows" functionality.
 
 ## Installation
 
