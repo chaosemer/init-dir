@@ -61,16 +61,29 @@
 ;;; Code:
 
 (defun init-dir--file-init-loadable-p (file)
-  "Test if FILE should be loaded at Emacs initialization."
+  "Test if FILE should be loaded at Emacs initialization.
+
+FILE: File path to test."
   (and (file-regular-p file)
        (member (file-name-extension file t) load-suffixes)))
 
 (defun init-dir--directory-files-filter
     (directory predicate &optional full match nosort)
   "Return a list of files in DIRECTORY, excluding some files.
+Files that don't match PREDICATE will not be included.
 
-Files that don't match PREDICATE will not be included.  FULL,
-MATCH, NOSORT have the same meaning as in `directory-files'."
+DIRECTORY: File path to a directory to list files in.
+PREDICATE: Function to call on each file name. Takes a single
+  parameter, the filename, and returns if the file should be
+  included in the results.
+FULL: If non-nil, return absolute file names.  Otherwise,
+  return names relative to the specified directory.
+MATCH: A regexp or nil. If non-nil, return only file names
+  whose non-directory part matches this regexp.
+NOSORT: If non-nil, the list is returned unsorted.  Otherwise,
+  the list is returned sorted with `string-lessp'.
+
+FULL, MATCH, NOSORT have the same meaning as in `directory-files'."
   (let ((files '()))
     (dolist (file (directory-files directory full match nosort))
       (when (funcall predicate file)
@@ -94,8 +107,9 @@ Also see `init-dir-load'.")
 (defun init-dir-load (&optional dir)
   "Load files from DIR for initialization.
 
-If unset, DIR defaults to \"init\" in `user-emacs-directory'.
-See info node `Find Init'.
+DIR: File path to a directory.  If unset or nil, DIR defaults
+  to \"init\" in `user-emacs-directory'.  See info node `Find
+  Init'.
 
 The common use here is to have your init file be very short and
 keep all configuration in a separate directory.  To use this
@@ -132,6 +146,8 @@ time to load."
 (defun init-dir--load-single-file (file)
   "Load a single file, with additional structure around it.
 
+FILE: File path to a file to load.
+
 FILE has the same meaning as in `load'."
   (let ((prev-time (time-convert nil 'list))
         (debug-ignored-errors '())
@@ -158,7 +174,7 @@ FILE has the same meaning as in `load'."
 (defun init-dir--debugger (&rest args)
   "Replacement debugger function while running `init-dir--load-single-file'.
 
-See `debugger' for the meaning of ARGS."
+ARGS: See `debugger' for the meaning of ARGS."
   (if (eq (car-safe args) 'error)
       ;; This entered the debugger due to an error -- the exact case
       ;; we want to handle specially.
