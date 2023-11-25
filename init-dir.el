@@ -158,7 +158,7 @@ FILE has the same meaning as in `load'."
 
     (let* (;; This line actually loads the file as a side effect.
            (load-error (catch 'init-dir--load-error (load file) nil))
-           
+
            (cur-time (time-convert nil 'list))
            (delta-time (float-time (time-subtract cur-time prev-time))))
       (when load-error
