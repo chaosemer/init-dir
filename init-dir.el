@@ -38,11 +38,11 @@
 ;;; Todo:
 ;;
 ;; At a high level, this package is intended to provide a smoother
-;; init configuration experience. There are a handful of improvements
+;; init configuration experience.  There are a handful of improvements
 ;; that would be good to make to that end:
 ;;
 ;; Capture runtime and garbage performance info, for display after
-;; load. Display would also have an easy way to reload that file and
+;; load.  Display would also have an easy way to reload that file and
 ;; get new perf data.
 ;;
 ;; Improve error messages during load -- Add a link to the location of
@@ -73,13 +73,13 @@ FILE: File path to test."
 Files that don't match PREDICATE will not be included.
 
 DIRECTORY: File path to a directory to list files in.
-PREDICATE: Function to call on each file name. Takes a single
+PREDICATE: Function to call on each file name.  Takes a single
   parameter, the filename, and returns if the file should be
   included in the results.
 FULL: If non-nil, return absolute file names.  Otherwise,
   return names relative to the specified directory.
-MATCH: A regexp or nil. If non-nil, return only file names
-  whose non-directory part matches this regexp.
+MATCH: A regexp or nil.  If non-nil, return only file names whose
+  non-directory part matches this regexp.
 NOSORT: If non-nil, the list is returned unsorted.  Otherwise,
   the list is returned sorted with `string-lessp'.
 
