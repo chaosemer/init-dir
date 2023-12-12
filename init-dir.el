@@ -179,7 +179,7 @@ Clicking the text will open the FILE, as if by `find-file'.
 
 FILE: An absolute path to a file.
 ROOT-DIR: Directory root that file is in."
-  (if (version< emacs-version "29.1")
+  (if (not (fboundp 'buttonize))        ;Requires GNU Emacs 29.1
       file
     (buttonize (file-relative-name file root-dir)
                #'find-file
