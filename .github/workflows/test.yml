@@ -14,20 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # Emacs 27.x spits out errors during package-lint. Ignore those
-          # warnings.
-          - emacs_version: 27.1
-            warnings_as_errors: false
-          - emacs_version: 27.2
-            warnings_as_errors: false
-          # All other Emacs versions should have no warnings.
-          - emacs_version: 28.1
-            warnings_as_errors: true
-          - emacs_version: 28.2
-            warnings_as_errors: true
-          - emacs_version: 29.1
-            warnings_as_errors: true
+        emacs_version: [27.1, 27.2, 28.1, 28.2, 29.1]
     steps:
       - uses: purcell/setup-emacs@v6.0
         with:
@@ -37,4 +24,6 @@ jobs:
         with:
           check: melpa
           file: '*.el'
-          warnings_as_errors: ${{ matrix.warnings_as_errors }}
+          # Emacs 27.x spits out errors during package-lint. Ignore those
+          # warnings.
+          warnings_as_errors: ${{ matrix.emacs_version >= 28 }}
