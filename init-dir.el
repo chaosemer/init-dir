@@ -179,10 +179,10 @@ Clicking the text will open the FILE, as if by `find-file'.
 
 FILE: An absolute path to a file.
 ROOT-DIR: Directory root that file is in."
-  (buttonize (file-relative-name file root-dir)
-             #'find-file
-             file
-             "Visit this file"))
+  (button-buttonize (file-relative-name file root-dir)
+                    #'find-file
+                    file
+                    "Visit this file"))
 
 (defun init-dir--choose-as-load (file)
   "Return FILE with the suffix `load' would add."
