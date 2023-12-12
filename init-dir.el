@@ -45,9 +45,6 @@
 ;; load.  Display would also have an easy way to reload that file and
 ;; get new perf data.
 ;;
-;; Improve error messages during load -- Add a link to the location of
-;; the read error or the form being evaluated.
-;;
 ;; Improve package debugging -- if selected packages were unable to be
 ;; activated (indicating they're not installed) display a helpful
 ;; warning message.
@@ -130,25 +127,25 @@ time to load."
   (setq dir (or dir (expand-file-name "init" user-emacs-directory))
         init-dir--error-and-warning-list '())
 
-  (mapc #'init-dir--load-single-file
-        (delete-dups
-         (mapcar #'file-name-sans-extension
-                 (init-dir--directory-files-filter
-                  dir
-                  #'init-dir--file-init-loadable-p
-                  t))))
+  (dolist (file (delete-dups
+                 (mapcar #'file-name-sans-extension
+                         (init-dir--directory-files-filter
+                          dir
+                          #'init-dir--file-init-loadable-p
+                          t))))
+    (init-dir--load-single-file (init-dir--choose-as-load file) dir))
 
   ;; Display any warnings.
   (when init-dir--error-and-warning-list
     (dolist (message (nreverse init-dir--error-and-warning-list))
       (display-warning 'init message))))
 
-(defun init-dir--load-single-file (file)
+(defun init-dir--load-single-file (file root-dir)
   "Load a single file, with additional structure around it.
 
-FILE: File path to a file to load.
-
-FILE has the same meaning as in `load'."
+FILE: File path to a file to load.  Unlike `load', this must be
+      an absolute path with an extension.
+ROOT-DIR: Directory root being loaded from."
   (let ((prev-time (time-convert nil 'list))
         (debug-ignored-errors '())
         (debug-on-error t)
@@ -157,19 +154,44 @@ FILE has the same meaning as in `load'."
         (init-dir--long-load-time-warning init-dir--long-load-time-warning))
 
     (let* (;; This line actually loads the file as a side effect.
-           (load-error (catch 'init-dir--load-error (load file) nil))
+           (load-error (catch 'init-dir--load-error
+                         (load file nil nil t t)
+                         nil))
 
            (cur-time (time-convert nil 'list))
            (delta-time (float-time (time-subtract cur-time prev-time))))
       (when load-error
         (push (format "Loading `%s' had an error: %S"
-                      file (error-message-string load-error))
+                      (init-dir--make-file-link file root-dir)
+                      (error-message-string load-error))
 	      init-dir--error-and-warning-list))
       (when (and init-dir--long-load-time-warning
                  (> delta-time init-dir--long-load-time-warning))
         (push (format "Loading `%s' took %f seconds."
                       file delta-time)
               init-dir--error-and-warning-list)))))
+
+(defun init-dir--make-file-link (file root-dir)
+  "Return clickable text for a link to FILE.
+
+The text will contain FILE, with the ROOT-DIR prefix removed.
+Clicking the text will open the FILE, as if by `find-file'.
+
+FILE: An absolute path to a file.
+ROOT-DIR: Directory root that file is in."
+  (buttonize (file-relative-name file root-dir)
+             #'find-file
+             file
+             "Visit this file"))
+
+(defun init-dir--choose-as-load (file)
+  "Return FILE with the suffix `load' would add."
+  (catch 'return
+    (dolist (suffix load-suffixes)
+      (let ((file-with-suffix (concat file suffix)))
+        (when (file-exists-p file-with-suffix)
+          (throw 'return file-with-suffix))))
+    nil))
 
 (defun init-dir--debugger (&rest args)
   "Replacement debugger function while running `init-dir--load-single-file'.
