@@ -147,17 +147,15 @@ FILE: File path to a file to load.  Unlike `load', this must be
       an absolute path with an extension.
 ROOT-DIR: Directory root being loaded from."
   (let ((prev-time (time-convert nil 'list))
-        (debug-ignored-errors '())
-        (debug-on-error t)
-        (debugger #'init-dir--debugger)
         ;; Dynamic binding intended to be modified by clients.
         (init-dir--long-load-time-warning init-dir--long-load-time-warning))
 
     (let* (;; This line actually loads the file as a side effect.
-           (load-error (catch 'init-dir--load-error
-                         (load file nil nil t t)
-                         nil))
-
+           (load-error
+            (condition-case err
+                (load file nil nil t t)
+              (:success nil)
+              ((debug t) err)))
            (cur-time (time-convert nil 'list))
            (delta-time (float-time (time-subtract cur-time prev-time))))
       (when load-error
@@ -194,16 +192,6 @@ ROOT-DIR: Directory root that file is in."
         (when (file-exists-p file-with-suffix)
           (throw 'return file-with-suffix))))
     nil))
-
-(defun init-dir--debugger (&rest args)
-  "Replacement debugger function while running `init-dir--load-single-file'.
-
-ARGS: See `debugger' for the meaning of ARGS."
-  (if (eq (car-safe args) 'error)
-      ;; This entered the debugger due to an error -- the exact case
-      ;; we want to handle specially.
-      (throw 'init-dir--load-error (car-safe (cdr-safe args)))
-    (apply #'debug args)))
 
 (provide 'init-dir)
 
