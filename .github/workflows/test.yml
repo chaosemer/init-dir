@@ -26,4 +26,4 @@ jobs:
           file: '*.el'
           # Emacs 27.x spits out errors during package-lint. Ignore those
           # warnings.
-          warnings_as_errors: ${{ matrix.emacs_version < 28 }}
+          warnings_as_errors: ${{ matrix.emacs_version >= 28 }}
