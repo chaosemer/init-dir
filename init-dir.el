@@ -45,10 +45,6 @@
 ;; load.  Display would also have an easy way to reload that file and
 ;; get new perf data.
 ;;
-;; Improve package debugging -- if selected packages were unable to be
-;; activated (indicating they're not installed) display a helpful
-;; warning message.
-;;
 ;; If any packages are able to be upgraded, display a helpful message
 ;; (after loading init in case the user wants to disable this
 ;; feature).
@@ -123,7 +119,11 @@ configuration for each mode in its own file.
 This will display warnings whenever loading a single file from
 the takes longer than `init-dir--long-load-time-warning'.  See
 its documentation to see how to handle files known to take a long
-time to load."
+time to load.
+
+For your convenience this also runs `init-dir-check-packages' by
+default.  If you do not want to run these checks, set
+`init-dir-enable-package-checks' to nil."
   (setq dir (or dir (expand-file-name "init" user-emacs-directory))
         init-dir--error-and-warning-list '())
 
@@ -134,6 +134,12 @@ time to load."
                           #'init-dir--file-init-loadable-p
                           t))))
     (init-dir--load-single-file (init-dir--choose-as-load file) dir))
+
+  ;; Package utilities.  This needs to be after loading files so that
+  ;; it can be disabled via user init files.
+  (when (and package-enable-at-startup
+             init-dir-enable-package-checks)
+    (init-dir-check-packages))
 
   ;; Display any warnings.
   (when init-dir--error-and-warning-list
@@ -192,6 +198,44 @@ ROOT-DIR: Directory root that file is in."
         (when (file-exists-p file-with-suffix)
           (throw 'return file-with-suffix))))
     nil))
+
+;;;###autoload
+(defun init-dir-check-packages ()
+  "Check the state of packages for common issues.
+
+Any issues detected are reported as warnings along with automatic
+fix buttons (if supported).  This is normally called
+automatically by `init-dir-load'."
+
+  ;; Check for missing package installs.
+  (let ((not-installed (seq-difference package-selected-packages
+                                       package-activated-list)))
+    (when not-installed
+      (display-warning 'init
+                       (format "%d missing package%s: %s %s "
+                               (length not-installed)
+                               (if (= (length not-installed) 1) "" "s")
+                               (mapconcat #'symbol-name not-installed ", ")
+                               (init-dir--make-install-packages-button))))))
+
+(defun init-dir--make-install-packages-button ()
+  "Return clickable text to install missing packages."
+  (if (not (fboundp 'buttonize))        ;Requires GNU Emacs 29.1
+      ""
+    (buttonize "[Fix]"
+               (lambda (&rest _) (package-install-selected-packages))
+               nil
+               "Install all missing packages")))
+
+;;; Customize variables:
+
+(defcustom init-dir-enable-package-checks t
+  "Set to non-nil if `init-dir-load' should also perform package checks."
+  :type 'boolean
+  :tag "Enable package checks"
+  :group 'initialization
+  :link '(url-link https://github.com/chaosemer/init-dir)
+  :package-version '(init-dir . "0.1"))
 
 (provide 'init-dir)
 
