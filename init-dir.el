@@ -45,10 +45,6 @@
 ;; load.  Display would also have an easy way to reload that file and
 ;; get new perf data.
 ;;
-;; If any packages are able to be upgraded, display a helpful message
-;; (after loading init in case the user wants to disable this
-;; feature).
-;;
 ;; Add unit tests.
 
 ;;; Code:
@@ -216,7 +212,28 @@ automatically by `init-dir-load'."
                                (length not-installed)
                                (if (= (length not-installed) 1) "" "s")
                                (mapconcat #'symbol-name not-installed ", ")
-                               (init-dir--make-install-packages-button))))))
+                               (init-dir--make-install-packages-button)))))
+
+  ;; Calculate the list of upgradable packages.  This takes a
+  ;; noticeable amount of time, so defer until soon after
+  ;; initialization is complete.
+  (when (and (fboundp 'package-vc-p)    ;Requires GNU Emacs 29.1
+             (fboundp 'package-upgrade) ;Requires GNU Emacs 29.1
+             (fboundp 'package--upgradeable-packages)) ;Requires GNU Emacs 29.1
+    (run-with-idle-timer
+     1 nil
+     (lambda ()
+       (when-let ((list (seq-remove (lambda (elt)
+                                      (seq-some #'package-vc-p
+                                                (alist-get elt package-alist)))
+                                    (package--upgradeable-packages))))
+         (display-warning 'init
+                          (format "%d upgradeable package%s: %s %s "
+                                  (length list)
+                                  (if (= (length list) 1) "" "s")
+                                  (mapconcat #'symbol-name list ", ")
+                                  (init-dir--make-upgrade-packages-button
+                                   list))))))))
 
 (defun init-dir--make-install-packages-button ()
   "Return clickable text to install missing packages."
@@ -226,6 +243,20 @@ automatically by `init-dir-load'."
                (lambda (&rest _) (package-install-selected-packages))
                nil
                "Install all missing packages")))
+
+(defun init-dir--make-upgrade-packages-button (packages)
+  "Return clickable text to upgrade packages.
+
+PACKAGES: List of package symbols to upgrade when the button is clicked."
+  (if (and (not (fboundp 'buttonize))        ;Requires GNU Emacs 29.1
+           (not (fboundp 'package-upgrade))) ;Requires GNU Emacs 29.1
+      ""
+    (buttonize "[Fix]"
+               (lambda (list) (mapc 'package-upgrade ;FIXME: Using quote instead of function to
+                                                     ;suppress byte-compiler warning on pre 29.1
+                                    list))
+               packages
+               "Upgrade all packages")))
 
 ;;; Customize variables:
 
