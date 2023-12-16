@@ -1,4 +1,8 @@
 # Init Directory (instead of a single file)
+[![GPL v3](https://img.shields.io/badge/license-GPL_v3-green.svg)](http://www.gnu.org/licenses/gpl-3.0.txt)
+[![Build Status](https://github.com/chaosemer/init-dir/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/chaosemer/init-dir/actions)
+[![MELPA](https://melpa.org/packages/init-dir-badge.svg)](https://melpa.org/#/init-dir)
+[![MELPA Stable](https://stable.melpa.org/packages/init-dir-badge.svg)](https://stable.melpa.org/#/init-dir)
 
 Keep all Emacs configuration in a separate directory that can be under
 version control with very short init.el change.  Using init-dir is as
