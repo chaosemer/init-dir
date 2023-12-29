@@ -173,7 +173,8 @@ ROOT-DIR: Directory root being loaded from."
       (when (and init-dir--long-load-time-warning
                  (> delta-time init-dir--long-load-time-warning))
         (push (format "Loading `%s' took %f seconds."
-                      file delta-time)
+                      (init-dir--make-file-link file root-dir)
+                      delta-time)
               init-dir--error-and-warning-list)))))
 
 (defun init-dir--make-file-link (file root-dir)
