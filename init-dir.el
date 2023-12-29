@@ -6,7 +6,7 @@
 ;; Version:             0.2-beta
 ;; Keywords:            extensions, internal
 ;; URL:                 http://github.com/chaosemer/init-dir
-;; Package-Requires:    ((emacs "27.1"))
+;; Package-Requires:    ((emacs "27.1") (benchmark-init "1.1"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -53,6 +53,9 @@
 ;; Add unit tests.
 
 ;;; Code:
+
+;; Needed to byte compile cleanly.
+(eval-when-compile (require 'benchmark-init-modes))
 
 (defun init-dir--file-init-loadable-p (file)
   "Test if FILE should be loaded at Emacs initialization.
@@ -127,20 +130,23 @@ default.  If you do not want to run these checks, set
 `init-dir-enable-package-checks' to nil."
   (setq dir (or dir (expand-file-name "init" user-emacs-directory))
         init-dir--error-and-warning-list '())
+  (benchmark-init/activate)
+  (unwind-protect
+      (progn
+        (dolist (file (delete-dups
+                       (mapcar #'file-name-sans-extension
+                               (init-dir--directory-files-filter
+                                dir
+                                #'init-dir--file-init-loadable-p
+                                t))))
+          (init-dir--load-single-file (init-dir--choose-as-load file) dir))
 
-  (dolist (file (delete-dups
-                 (mapcar #'file-name-sans-extension
-                         (init-dir--directory-files-filter
-                          dir
-                          #'init-dir--file-init-loadable-p
-                          t))))
-    (init-dir--load-single-file (init-dir--choose-as-load file) dir))
-
-  ;; Package utilities.  This needs to be after loading files so that
-  ;; it can be disabled via user init files.
-  (when (and package-enable-at-startup
-             init-dir-enable-package-checks)
-    (init-dir-check-packages))
+        ;; Package utilities.  This needs to be after loading files so
+        ;; that it can be disabled via user init files.
+        (when (and package-enable-at-startup
+                   init-dir-enable-package-checks)
+          (init-dir-check-packages)))
+    (benchmark-init/deactivate))
 
   ;; Display any warnings.
   (when init-dir--error-and-warning-list
@@ -153,8 +159,7 @@ default.  If you do not want to run these checks, set
 FILE: File path to a file to load.  Unlike `load', this must be
       an absolute path with an extension.
 ROOT-DIR: Directory root being loaded from."
-  (let ((prev-time (time-convert nil 'list))
-        ;; Dynamic binding intended to be modified by clients.
+  (let (;; Dynamic binding intended to be modified by clients.
         (init-dir--long-load-time-warning init-dir--long-load-time-warning))
 
     (let* (;; This line actually loads the file as a side effect.
@@ -163,18 +168,21 @@ ROOT-DIR: Directory root being loaded from."
                 (load file nil nil t t)
               (:success nil)
               ((debug t) err)))
-           (cur-time (time-convert nil 'list))
-           (delta-time (float-time (time-subtract cur-time prev-time))))
+           (node (init-dir--benchmark-init-node file))
+           (duration (/ (benchmark-init/node-duration node) 1000.0)))
       (when load-error
         (push (format "Loading `%s' had an error: %S"
                       (init-dir--make-file-link file root-dir)
                       (error-message-string load-error))
 	      init-dir--error-and-warning-list))
       (when (and init-dir--long-load-time-warning
-                 (> delta-time init-dir--long-load-time-warning))
-        (push (format "Loading `%s' took %f seconds."
+                 (> duration init-dir--long-load-time-warning))
+        (push (format "Loading `%s' took %f seconds. %s "
                       (init-dir--make-file-link file root-dir)
-                      delta-time)
+                      duration
+                      (if (not (fboundp 'buttonize)) ;Requires GNU Emacs 29.1
+                          ""
+                        (buttonize "[Timing]" #'init-dir--show-timing file)))
               init-dir--error-and-warning-list)))))
 
 (defun init-dir--make-file-link (file root-dir)
@@ -200,6 +208,33 @@ ROOT-DIR: Directory root that file is in."
         (when (file-exists-p file-with-suffix)
           (throw 'return file-with-suffix))))
     nil))
+
+(defun init-dir--benchmark-init-node (file)
+  "Return the node corresponding to FILE.
+Return value is of type `benchmark-init/node'."
+  (let ((abbrev-name (abbreviate-file-name file))
+        (children (benchmark-init/node-children benchmark-init/durations-tree)))
+    (seq-find (lambda (node) (string= abbrev-name
+                                      (benchmark-init/node-name node)))
+              children)))
+
+(defun init-dir--show-timing (file)
+  "Show the timing data for FILE.
+
+This shows the tree for just the single node using
+`benchmark-init/show-durations-tree' for debugging."
+  ;; Only show the relevant node in the tree, for most analysis.
+  ;; TODO: This should be an officially supported call.
+  (require 'benchmark-init-modes)
+  (let* ((node (init-dir--benchmark-init-node file))
+         (benchmark-init/durations-tree node))
+    ;; Force benchmark-init to refresh its buffer by destroying any
+    ;; existing buffer.  This is a hack, but buffers being destroyed
+    ;; by user is a common path, so this is unlikely to break.
+    (when-let ((buf (get-buffer (format benchmark-init/buffer-name "Tree"))))
+      (kill-buffer buf))
+
+    (benchmark-init/show-durations-tree)))
 
 ;;;###autoload
 (defun init-dir-check-packages ()
