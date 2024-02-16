@@ -180,9 +180,9 @@ ROOT-DIR: Directory root being loaded from."
         (push (format "Loading `%s' took %f seconds. %s "
                       (init-dir--make-file-link file root-dir)
                       duration
-                      (if (not (fboundp 'buttonize)) ;Requires GNU Emacs 29.1
-                          ""
-                        (buttonize "[Timing]" #'init-dir--show-timing file)))
+                      (if (fboundp 'buttonize) ;Requires GNU Emacs 29.1
+                          (buttonize "[Timing]" #'init-dir--show-timing file)
+			""))
               init-dir--error-and-warning-list)))))
 
 (defun init-dir--make-file-link (file root-dir)
@@ -193,12 +193,12 @@ Clicking the text will open the FILE, as if by `find-file'.
 
 FILE: An absolute path to a file.
 ROOT-DIR: Directory root that file is in."
-  (if (not (fboundp 'buttonize))        ;Requires GNU Emacs 29.1
-      file
-    (buttonize (file-relative-name file root-dir)
-               #'find-file
-               file
-               "Visit this file")))
+  (if (fboundp 'buttonize)              ;Requires GNU Emacs 29.1
+      (buttonize (file-relative-name file root-dir)
+                 #'find-file
+                 file
+                 "Visit this file")
+    file))
 
 (defun init-dir--choose-as-load (file)
   "Return FILE with the suffix `load' would add."
@@ -278,26 +278,25 @@ automatically by `init-dir-load'."
 
 (defun init-dir--make-install-packages-button ()
   "Return clickable text to install missing packages."
-  (if (not (fboundp 'buttonize))        ;Requires GNU Emacs 29.1
-      ""
-    (buttonize "[Fix]"
-               (lambda (&rest _) (package-install-selected-packages))
-               nil
-               "Install all missing packages")))
+  (if (fboundp 'buttonize)              ;Requires GNU Emacs 29.1
+      (buttonize "[Fix]"
+                 (lambda (&rest _) (package-install-selected-packages))
+                 nil
+                 "Install all missing packages")
+    ""))
 
 (defun init-dir--make-upgrade-packages-button (packages)
   "Return clickable text to upgrade packages.
 
 PACKAGES: List of package symbols to upgrade when the button is clicked."
-  (if (and (not (fboundp 'buttonize))        ;Requires GNU Emacs 29.1
-           (not (fboundp 'package-upgrade))) ;Requires GNU Emacs 29.1
-      ""
-    (buttonize "[Fix]"
-               (lambda (list) (mapc 'package-upgrade ;FIXME: Using quote instead of function to
-                                                     ;suppress byte-compiler warning on pre 29.1
-                                    list))
-               packages
-               "Upgrade all packages")))
+  (if (and (fboundp 'buttonize)         ;Requires GNU Emacs 29.1
+           (fboundp 'package-upgrade))  ;Requires GNU Emacs 29.1
+      (buttonize "[Fix]"
+		 (lambda (list) (mapc #'package-upgrade
+                                      list))
+                 packages
+                 "Upgrade all packages")
+    ""))
 
 ;;; Customize variables:
 
