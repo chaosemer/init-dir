@@ -6,7 +6,7 @@
 ;; Version:             0.2-beta
 ;; Keywords:            extensions, internal
 ;; URL:                 http://github.com/chaosemer/init-dir
-;; Package-Requires:    ((emacs "27.1") (benchmark-init "1.1"))
+;; Package-Requires:    ((emacs "27.1") (benchmark-init "1.2"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -224,17 +224,8 @@ Return value is of type `benchmark-init/node'."
 This shows the tree for just the single node using
 `benchmark-init/show-durations-tree' for debugging."
   ;; Only show the relevant node in the tree, for most analysis.
-  ;; TODO: This should be an officially supported call.
   (require 'benchmark-init-modes)
-  (let* ((node (init-dir--benchmark-init-node file))
-         (benchmark-init/durations-tree node))
-    ;; Force benchmark-init to refresh its buffer by destroying any
-    ;; existing buffer.  This is a hack, but buffers being destroyed
-    ;; by user is a common path, so this is unlikely to break.
-    (when-let ((buf (get-buffer (format benchmark-init/buffer-name "Tree"))))
-      (kill-buffer buf))
-
-    (benchmark-init/show-durations-tree)))
+  (benchmark-init/show-durations-tree (init-dir--benchmark-init-node file)))
 
 ;;;###autoload
 (defun init-dir-check-packages ()
