@@ -3,7 +3,7 @@
 ;; Copyright 2005-2023 Jared Finder
 ;; Author:              Jared Finder <jared@finder.org>
 ;; Created:             Feb 22, 2005
-;; Version:             0.2-beta
+;; Version:             0.2
 ;; Keywords:            extensions, internal
 ;; URL:                 http://github.com/chaosemer/init-dir
 ;; Package-Requires:    ((emacs "27.1") (benchmark-init "1.2"))
@@ -40,15 +40,6 @@
 ;; At a high level, this package is intended to provide a smoother
 ;; init configuration experience.  There are a handful of improvements
 ;; that would be good to make to that end:
-;;
-
-;; Targeting 0.2:
-;;
-;; Capture runtime and garbage performance info, for display after
-;; load.  Display would also have an easy way to reload that file and
-;; get new perf data.
-;;
-;; Targeting 0.9:
 ;;
 ;; Add unit tests.
 
