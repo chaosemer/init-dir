@@ -30,7 +30,7 @@
 ;; init-dir is as simple as putting the following single line in the
 ;; actual init.el file:
 ;;
-;; (load-init-dir)
+;; (init-dir-load)
 ;;
 ;; This also comes with a very lightweight init profiler to warn you
 ;; if your Emacs startup is slow.

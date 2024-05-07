@@ -10,7 +10,7 @@ simple as putting the following single line in the actual init.el
 file:
 
 ``` emacs-lisp
-(load-init-dir)
+(init-dir-load)
 ```
 
 ## Why init-dir?
