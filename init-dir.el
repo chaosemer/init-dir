@@ -246,10 +246,10 @@ automatically by `init-dir-load'."
     (run-with-idle-timer
      1 nil
      (lambda ()
-       (when-let ((list (seq-remove (lambda (elt)
-                                      (seq-some #'package-vc-p
+       (when-let ((list (seq-keep (lambda (elt)
+                                    (seq-filter #'init-dir--recommend-update-p
                                                 (alist-get elt package-alist)))
-                                    (package--upgradeable-packages))))
+                                  (package--upgradeable-packages))))
          (display-warning 'init
                           (format "%d upgradeable package%s: %s %s "
                                   (length list)
@@ -257,6 +257,17 @@ automatically by `init-dir-load'."
                                   (mapconcat #'symbol-name list ", ")
                                   (init-dir--make-upgrade-packages-button
                                    list))))))))
+
+(defun init-dir--recommend-update-p (package)
+  "Return if init-dir should recommend updating a particular package."
+  (and
+   ;; Is a local package from an ELPA
+   (not (package-vc-p package))
+
+   ;; Is installed locally for this user, not from the OS package manager
+   (string-prefix-p
+    (expand-file-name (file-name-as-directory package-user-dir))
+    (expand-file-name (package-desc-dir package)))))
 
 (defun init-dir--make-install-packages-button ()
   "Return clickable text to install missing packages."
