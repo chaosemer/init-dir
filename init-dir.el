@@ -240,8 +240,7 @@ automatically by `init-dir-load'."
   ;; Calculate the list of upgradable packages.  This takes a
   ;; noticeable amount of time, so defer until soon after
   ;; initialization is complete.
-  (when (and (fboundp 'package-vc-p)    ;Requires GNU Emacs 29.1
-             (fboundp 'package-upgrade) ;Requires GNU Emacs 29.1
+  (when (and (fboundp 'package-upgrade) ;Requires GNU Emacs 29.1
              (fboundp 'package--upgradeable-packages)) ;Requires GNU Emacs 29.1
     (run-with-idle-timer
      1 nil
@@ -258,18 +257,20 @@ automatically by `init-dir-load'."
                                   (init-dir--make-upgrade-packages-button
                                    list))))))))
 
-(defun init-dir--recommend-update-p (package)
+(defun init-dir--recommend-update-p (package-desc)
   "Return if init-dir should recommend updating a particular package.
+This does not check if a package is actually currently
+upgradeable.
 
-This does not check if a package is actually currently upgradeable."
+PACKAGE-DESC is a `package-desc' structure."
   (and
    ;; Is a local package from an ELPA
-   (not (package-vc-p package))
+   (not (and (fboundp 'package-vc-p) (package-vc-p package-desc)))
 
    ;; Is installed locally for this user, not from the OS package manager
    (string-prefix-p
     (expand-file-name (file-name-as-directory package-user-dir))
-    (expand-file-name (package-desc-dir package)))))
+    (expand-file-name (package-desc-dir package-desc)))))
 
 (defun init-dir--make-install-packages-button ()
   "Return clickable text to install missing packages."
