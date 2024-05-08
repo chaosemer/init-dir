@@ -249,7 +249,7 @@ automatically by `init-dir-load'."
        (when-let ((list (seq-filter (lambda (elt)
                                       (seq-some #'init-dir--recommend-update-p
                                                 (alist-get elt package-alist)))
-                                  (package--upgradeable-packages))))
+                                    (package--upgradeable-packages))))
          (display-warning 'init
                           (format "%d upgradeable package%s: %s %s "
                                   (length list)
