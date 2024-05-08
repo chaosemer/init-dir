@@ -259,7 +259,9 @@ automatically by `init-dir-load'."
                                    list))))))))
 
 (defun init-dir--recommend-update-p (package)
-  "Return if init-dir should recommend updating a particular package."
+  "Return if init-dir should recommend updating a particular package.
+
+This does not check if a package is actually currently upgradeable."
   (and
    ;; Is a local package from an ELPA
    (not (package-vc-p package))
