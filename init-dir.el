@@ -246,8 +246,8 @@ automatically by `init-dir-load'."
     (run-with-idle-timer
      1 nil
      (lambda ()
-       (when-let ((list (seq-keep (lambda (elt)
-                                    (seq-filter #'init-dir--recommend-update-p
+       (when-let ((list (seq-filter (lambda (elt)
+                                      (seq-some #'init-dir--recommend-update-p
                                                 (alist-get elt package-alist)))
                                   (package--upgradeable-packages))))
          (display-warning 'init
