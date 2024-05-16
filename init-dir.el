@@ -45,9 +45,21 @@
 
 ;;; Code:
 
+(require 'package)
+
 ;; Needed to byte compile cleanly.
 (eval-when-compile (require 'benchmark-init-modes))
 
+;;; Customize variables:
+
+(defcustom init-dir-enable-package-checks t
+  "Set to non-nil if `init-dir-load' should also perform package checks."
+  :type 'boolean
+  :tag "Enable package checks"
+  :group 'initialization
+  :link '(url-link https://github.com/chaosemer/init-dir)
+  :package-version '(init-dir . "0.1"))
+
 (defun init-dir--file-init-loadable-p (file)
   "Test if FILE should be loaded at Emacs initialization.
 
@@ -294,16 +306,6 @@ PACKAGES: List of package symbols to upgrade when the button is clicked."
                  "Upgrade all packages")
     ""))
 
-;;; Customize variables:
-
-(defcustom init-dir-enable-package-checks t
-  "Set to non-nil if `init-dir-load' should also perform package checks."
-  :type 'boolean
-  :tag "Enable package checks"
-  :group 'initialization
-  :link '(url-link https://github.com/chaosemer/init-dir)
-  :package-version '(init-dir . "0.1"))
-
 (provide 'init-dir)
 
 ;;; init-dir.el ends here
