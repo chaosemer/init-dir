@@ -3,7 +3,7 @@
 ;; Copyright 2005-2023 Jared Finder
 ;; Author:              Jared Finder <jared@finder.org>
 ;; Created:             Feb 22, 2005
-;; Version:             0.2
+;; Version:             0.2.1
 ;; Keywords:            extensions, internal
 ;; URL:                 http://github.com/chaosemer/init-dir
 ;; Package-Requires:    ((emacs "27.1") (benchmark-init "1.2"))
