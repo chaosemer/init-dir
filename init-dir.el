@@ -59,6 +59,13 @@
   :group 'initialization
   :link '(url-link https://github.com/chaosemer/init-dir)
   :package-version '(init-dir . "0.1"))
+
+;; Since this has to be set prior to load, it's just a var
+(defvar init-dir-enable-reduced-gc-pressure-during-load t
+  "Set to non-nil if `init-dir-load' should reduce GC runs.
+
+When set, the garbage collector will be run after loading all
+files.")
 
 (defun init-dir--file-init-loadable-p (file)
   "Test if FILE should be loaded at Emacs initialization.
@@ -135,26 +142,39 @@ default.  If you do not want to run these checks, set
         init-dir--error-and-warning-list '())
   (benchmark-init/activate)
   (unwind-protect
-      (progn
-        (dolist (file (delete-dups
-                       (mapcar #'file-name-sans-extension
-                               (init-dir--directory-files-filter
-                                dir
-                                #'init-dir--file-init-loadable-p
-                                t))))
-          (init-dir--load-single-file (init-dir--choose-as-load file) dir))
-
-        ;; Package utilities.  This needs to be after loading files so
-        ;; that it can be disabled via user init files.
-        (when (and package-enable-at-startup
-                   init-dir-enable-package-checks)
-          (init-dir-check-packages)))
+      (init-dir--load-1 dir)
     (benchmark-init/deactivate))
 
   ;; Display any warnings.
   (when init-dir--error-and-warning-list
     (dolist (message (nreverse init-dir--error-and-warning-list))
       (display-warning 'init message))))
+
+(defun init-dir--load-1 (dir)
+  "Load all files in DIR,  with additional structure."
+
+  (let ((gc-cons-percentage gc-cons-percentage)
+        (gc-cons-threshold gc-cons-threshold))
+    (when init-dir-enable-reduced-gc-pressure-during-load
+      (setq gc-cons-percentage 0.5
+            gc-cons-threshold 10000000))
+    (dolist (file (delete-dups
+                   (mapcar #'file-name-sans-extension
+                           (init-dir--directory-files-filter
+                            dir
+                            #'init-dir--file-init-loadable-p
+                            t))))
+      (init-dir--load-single-file (init-dir--choose-as-load file) dir))
+
+    ;; Package utilities.  This needs to be after loading files so
+    ;; that it can be disabled via user init files.
+    (when (and package-enable-at-startup
+               init-dir-enable-package-checks)
+      (init-dir-check-packages)))
+
+  (when init-dir-enable-reduced-gc-pressure-during-load
+    (benchmark-init/measure-around "Post init GC" 'init-dir (garbage-collect)
+                                   (lambda () t))))
 
 (defun init-dir--load-single-file (file root-dir)
   "Load a single file, with additional structure around it.
