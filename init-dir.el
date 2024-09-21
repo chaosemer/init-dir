@@ -197,7 +197,7 @@ ROOT-DIR: Directory root being loaded from."
         (push (format "Loading `%s' had an error: %S"
                       (init-dir--make-file-link file root-dir)
                       (error-message-string load-error))
-	      init-dir--error-and-warning-list))
+              init-dir--error-and-warning-list))
       (when (and init-dir--long-load-time-warning
                  (> duration init-dir--long-load-time-warning))
         (push (format "Loading `%s' took %f seconds. %s "
@@ -205,7 +205,7 @@ ROOT-DIR: Directory root being loaded from."
                       duration
                       (if (fboundp 'buttonize) ;Requires GNU Emacs 29.1
                           (buttonize "[Timing]" #'init-dir--show-timing file)
-			""))
+                        ""))
               init-dir--error-and-warning-list)))))
 
 (defun init-dir--make-file-link (file root-dir)
@@ -320,7 +320,7 @@ PACKAGES: List of package symbols to upgrade when the button is clicked."
   (if (and (fboundp 'buttonize)         ;Requires GNU Emacs 29.1
            (fboundp 'package-upgrade))  ;Requires GNU Emacs 29.1
       (buttonize "[Fix]"
-		 (lambda (list) (mapc #'package-upgrade
+                 (lambda (list) (mapc #'package-upgrade
                                       list))
                  packages
                  "Upgrade all packages")
