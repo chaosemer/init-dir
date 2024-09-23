@@ -1,6 +1,6 @@
 ;;; init-dir.el ---  Init directory instead of just a single file -*- lexical-binding: t; -*-
 
-;; Copyright 2005-2023 Jared Finder
+;; Copyright 2005-2024 Jared Finder
 ;; Author:              Jared Finder <jared@finder.org>
 ;; Created:             Feb 22, 2005
 ;; Version:             0.2.1
@@ -64,8 +64,10 @@
 (defvar init-dir-enable-reduced-gc-pressure-during-load t
   "Set to non-nil if `init-dir-load' should reduce GC runs.
 
-When set, the garbage collector will be run after loading all
-files.")
+When set, `gc-cons-threshold' and `gc-cons-percentage' will be
+set to high numbers while loading before being restored. The
+garbage collector will also be run after loading all files and
+added to the time benchmark visible from benchmark-init.")
 
 (defun init-dir--file-init-loadable-p (file)
   "Test if FILE should be loaded at Emacs initialization.
