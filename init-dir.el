@@ -65,7 +65,7 @@
   "Set to non-nil if `init-dir-load' should reduce GC runs.
 
 When set, `gc-cons-threshold' and `gc-cons-percentage' will be
-set to high numbers while loading before being restored. The
+set to high numbers while loading before being restored.  The
 garbage collector will also be run after loading all files and
 added to the time benchmark visible from benchmark-init.")
 
