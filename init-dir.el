@@ -111,6 +111,10 @@ Also see `init-dir-load'.")
 (defvar init-dir--error-and-warning-list '()
   "Errors and warnings that came up while running `init-dir-load'.")
 
+;; Note: This variable does not exist on HEAD yet, it is added in
+;; https://github.com/dholm/benchmark-init-el/pull/31.
+(defvar benchmark-init/backtrace-node-types)
+
 ;;; The core functionality.
 ;;;###autoload
 (defun init-dir-load (&optional dir)
@@ -142,10 +146,14 @@ default.  If you do not want to run these checks, set
 `init-dir-enable-package-checks' to nil."
   (setq dir (or dir (expand-file-name "init" user-emacs-directory))
         init-dir--error-and-warning-list '())
-  (benchmark-init/activate)
-  (unwind-protect
-      (init-dir--load-1 dir)
-    (benchmark-init/deactivate))
+
+  ;; Load calls are almost always explicit and not a concern.  Require
+  ;; calls may be triggered via transitive autoloads.
+  (let ((benchmark-init/backtrace-node-types '(require)))
+    (benchmark-init/activate)
+    (unwind-protect
+        (init-dir--load-1 dir)
+      (benchmark-init/deactivate)))
 
   ;; Display any warnings.
   (when init-dir--error-and-warning-list
