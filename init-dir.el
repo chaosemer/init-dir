@@ -287,17 +287,18 @@ automatically by `init-dir-load'."
     (run-with-idle-timer
      1 nil
      (lambda ()
-       (when-let ((list (seq-filter (lambda (elt)
-                                      (seq-some #'init-dir--recommend-update-p
-                                                (alist-get elt package-alist)))
-                                    (package--upgradeable-packages))))
-         (display-warning 'init
-                          (format "%d upgradeable package%s: %s %s "
-                                  (length list)
-                                  (if (= (length list) 1) "" "s")
-                                  (mapconcat #'symbol-name list ", ")
-                                  (init-dir--make-upgrade-packages-button
-                                   list))))))))
+       (let ((list (seq-filter (lambda (elt)
+                                 (seq-some #'init-dir--recommend-update-p
+                                           (alist-get elt package-alist)))
+                               (package--upgradeable-packages))))
+         (when list
+           (display-warning 'init
+                            (format "%d upgradeable package%s: %s %s "
+                                    (length list)
+                                    (if (= (length list) 1) "" "s")
+                                    (mapconcat #'symbol-name list ", ")
+                                    (init-dir--make-upgrade-packages-button
+                                     list)))))))))
 
 (defun init-dir--recommend-update-p (package-desc)
   "Return if init-dir should recommend updating a particular package.
